@@ -1,0 +1,58 @@
+CREATE DATABASE jooqtest;
+USE jooqtest;
+ 
+CREATE TABLE car (
+id BIGINT  NOT NULL AUTO_INCREMENT,
+manufactor VARCHAR(255),
+create_date DATE,
+model VARCHAR(30),
+color VARCHAR(20),
+door_quantity INT,
+petrol BOOLEAN,
+
+PRIMARY KEY(id)
+);
+ 
+INSERT INTO car (manufactor, create_date, model, color, door_quantity, petrol) VALUES
+  ('Hyundai', '2014-04-07', 'Genesis', 'red', 5, true),
+  ('Ford', '2010-03-07', 'Kuga', 'blue', 4, false),
+  ('Jeep', '2010-05-22', 'Cherokee', 'black', 4, true),
+  ('Toyota', '2010-11-12', 'Auris', 'white', 3, true);
+
+
+CREATE TABLE company (
+
+	id BIGINT NOT NULL AUTO_INCREMENT,
+	name VARCHAR(50),
+	email VARCHAR(30),
+	city VARCHAR(20),
+
+	PRIMARY KEY (id)
+
+);
+
+INSERT INTO company (name, email, city) VALUES
+  ('SoftServe', 'softServe@ss.com.ua', 'Ivano-Frankivsk'),
+  ('Luxoft', 'luxoft@lux.com.ua', 'Kyiv');
+
+
+CREATE TABLE driver (
+
+	id BIGINT NOT NULL AUTO_INCREMENT,
+	first_name VARCHAR(20) NOT NULL,
+	last_name VARCHAR(20) NOT NULL,
+	birthday DATE,
+	telephone VARCHAR(20) NOT NULL,
+	car_id BIGINT NOT NULL,
+	company_id BIGINT NOT NULL,
+
+	FOREIGN KEY (car_id) REFERENCES car(id),
+	FOREIGN KEY (company_id) REFERENCES company(id),
+	PRIMARY KEY(id)
+);
+
+INSERT INTO driver (first_name, last_name, birthday, telephone, car_id, company_id) VALUES
+  ('Slavik', 'Kynyk', '1991-04-07', '0985687452', 4, 1),
+  ('Taras', 'Buga', '1983-10-15', '0505699452', 3, 2),
+  ('Mykola', 'Yanchiy', '1992-07-23', '0662546854', 2, 1),
+  ('Khrystyna', 'Makar', '1991-03-26', '0661381745', 1, 2);
