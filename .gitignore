@@ -1,0 +1,40 @@
+### Java ###
+*.class
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+### IntelliJ ###
+*.iml
+*.ipr
+*.iws
+.idea/
+
+### Eclipse ###
+.project
+.metadata
+bin/**
+tmp/**
+tmp/**/*
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.classpath
+.settings/
+.loadpath
+
+# PDT-specific
+.buildpath
+
+### Maven ###
+target/
+
+### Common ###
+*.log
+*/*.log
+*.*~
+*/*.*~

@@ -7,6 +7,7 @@ import org.jooq.DSLContext;
 import org.jooq.Record;
 import org.jooq.Result;
 import org.jooq.SQLDialect;
+import org.jooq.SelectQuery;
 import org.jooq.impl.DSL;
 
 import java.sql.Connection;
@@ -64,6 +65,9 @@ public class Main {
             }
 
             String sql = database.select(field("color")).from(table("Car")).getSQL();
+            System.out.println("*****************" + database.select()
+                    .from(Car.CAR)
+                    .where(Car.CAR.DOOR_QUANTITY.equal(4)).getSQL());
 
             System.out.println();
             showDriversWithTheirCar(database);
@@ -119,5 +123,11 @@ public class Main {
 
             System.out.println("Company: " + companyName + ", driver: " + driverName + ", car: " + car );
         }
+    }
+
+    public static void findCompanyByCity(DSLContext database) {
+        System.out.println("=============== Company in city ===============");
+        SelectQuery<Record> query = database.selectQuery();
+        query.addFrom(CAR);
     }
 }
