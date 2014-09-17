@@ -5,6 +5,7 @@ import com.springapp.mvc.dto.Group;
 import com.springapp.mvc.dto.Item;
 import com.springapp.mvc.dto.ObjectTypes;
 import com.springapp.mvc.dto.Rule;
+import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Operator;
 import org.jooq.SelectQuery;
@@ -12,8 +13,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import static org.jooq.impl.DSL.falseCondition;
 import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.table;
 
@@ -23,8 +28,12 @@ public class QueryBuildService {
     @Qualifier("dslContextDatabase")
     private DSLContext dslContextDatabase;
 
+    private Set<String> tableNames;
+
     public String getQueryString(Item item) {
-        return dslContextDatabase.renderInlined(parseGroup(item, null));
+        SelectQuery query = parseGroup(item, null);
+        cleanQueryBuildServiceObject();
+        return dslContextDatabase.renderInlined(query);
     }
 
     //1st item = group, always
@@ -48,7 +57,12 @@ public class QueryBuildService {
 
     private SelectQuery parseRule(Item item, SelectQuery query, String operator) {
         Rule rule = (Rule) item;
-        query.addFrom(table(rule.getId()));
+        String tableName = rule.getId();
+
+        if (!getTableNames().contains(tableName)) {
+            query.addFrom(table(rule.getId()));
+            getTableNames().add(tableName);
+        }
         query.addConditions(getOperator(operator), field(getFullFieldName(rule)).equal(rule.getValue()));
         return query;
     }
@@ -64,4 +78,16 @@ public class QueryBuildService {
             return Operator.AND;
         }
     }
+
+    private Set<String> getTableNames() {
+        if (tableNames == null) {
+            tableNames = new HashSet<String>();
+        }
+        return tableNames;
+    }
+
+    private void cleanQueryBuildServiceObject() {
+        tableNames.clear();
+    }
+
 }
