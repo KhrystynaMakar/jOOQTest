@@ -4,6 +4,8 @@ import com.jooqtest.model.tables.Car;
 import com.jooqtest.model.tables.Driver;
 import com.jooqtest.model.tables.records.CarRecord;
 import org.jooq.DSLContext;
+import org.jooq.Operator;
+import org.jooq.Query;
 import org.jooq.Record;
 import org.jooq.Result;
 import org.jooq.SQLDialect;
@@ -74,6 +76,28 @@ public class Main {
 
             System.out.println();
             showCompanyAndEmployee(database);
+            System.out.println
+                    ("===========================================================================================");
+            Query query = database.query("SELECT * FROM car");
+           /* SelectQuery selectQuery = (SelectQuery) query;
+            selectQuery.addConditions(field("Car.color").equal("red"));
+            query = selectQuery;
+            Result<Record> result1 = ((SelectQuery) query).fetch();*/
+            Result<Record> result1 = database.fetch("SELECT * FROM car");
+            for (Record r: result1) {
+                Long id = r.getValue(Car.CAR.ID);
+                String manufactor = (String)r.getValue(1);
+                String model = r.getValue(Car.CAR.MODEL);
+                Date date = r.getValue(Car.CAR.CREATE_DATE);
+                String color = r.getValue(Car.CAR.COLOR);
+                Integer doorQuantity = r.getValue(Car.CAR.DOOR_QUANTITY);
+
+                System.out.println("Car " + id + ": " + manufactor + ", " + model + ", " + date + ", " + color + ", " +
+                        doorQuantity);
+            }
+            System.out.println
+                    ("===========================================================================================");
+
 
             conn.close();
         } catch (Exception e) {

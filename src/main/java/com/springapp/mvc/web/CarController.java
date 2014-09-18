@@ -17,6 +17,6 @@ public class CarController {
 
     @RequestMapping(value = "/filter", method = RequestMethod.POST)
     public @ResponseBody String printSQLQuery(@RequestBody Item item) {
-        return carService.findByColor(item);
+        return carService.getQueryString(item);
     }
 }
