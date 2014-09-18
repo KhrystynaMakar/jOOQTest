@@ -9,7 +9,8 @@ public class CarService {
     @Autowired
     private QueryBuildService queryBuildService;
 
-    public String findByColor(Item item) {
+    public String getQueryString(Item item) {
+        //QueryBuildService queryBuildService = new QueryBuildService();
         return queryBuildService.getQueryString(item);
     }
 }

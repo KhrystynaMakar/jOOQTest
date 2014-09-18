@@ -7,6 +7,7 @@ import com.springapp.mvc.dto.ObjectTypes;
 import com.springapp.mvc.dto.Rule;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
+import org.jooq.Field;
 import org.jooq.Operator;
 import org.jooq.SelectQuery;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static org.jooq.impl.DSL.condition;
 import static org.jooq.impl.DSL.falseCondition;
 import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.table;
@@ -31,40 +33,67 @@ public class QueryBuildService {
     private Set<String> tableNames;
 
     public String getQueryString(Item item) {
-        SelectQuery query = parseGroup(item, null);
+        return dslContextDatabase.renderInlined(getQuery(item));
+    }
+
+    public SelectQuery getQuery(Item item) {
+        Group group = (Group) item;
+        SelectQuery query = dslContextDatabase.selectQuery();
+
+        Condition condition = parseRules(group, query);
+        query.addConditions(getOperator(group.getCondition()), condition);
+        parseGroup(group, query);
         cleanQueryBuildServiceObject();
-        return dslContextDatabase.renderInlined(query);
+        return query;
     }
 
-    //1st item = group, always
-    private SelectQuery parseGroup(Item item, SelectQuery query) {
-        Group group = (Group)item;
-        List<Item> items = group.getRules();
-        String condition = group.getCondition();
-        return  checkItems(items, condition, (query == null) ? dslContextDatabase.selectQuery() : query);
-    }
+    private Condition parseRules(Group group, SelectQuery query) {
+        List<Rule> rules = getRules(group);
+        String operator = group.getCondition();
+        Condition condition = field(getFullFieldName(rules.get(0))).equal(rules.get(0).getValue());
+        checkQueryTables(query, rules.get(0));
 
-    private SelectQuery checkItems(List<Item> items, String condition, SelectQuery query) {
-        for (Item item: items) {
-            if (item.getObjType().equals(ObjectTypes.GROUP.toString().toLowerCase())) {
-                parseGroup(item, query);
-            } else if (item.getObjType().equals(ObjectTypes.RULE.toString().toLowerCase())) {
-                parseRule(item, query, condition);
+        for (int i = 1; i < rules.size(); i++) {
+            Rule rule = rules.get(i);
+            checkQueryTables(query, rule);
+            if (operator.equals("OR")) {
+               condition = condition.or(field(getFullFieldName(rule)).equal(rule.getValue()));
+            } else {
+               condition = condition.and(field(getFullFieldName(rule)).equal(rule.getValue()));
             }
         }
+        return condition;
+    }
+
+    private SelectQuery parseGroup(Group parentGroup, SelectQuery query) {
+        List<Group> groups = getGroups(parentGroup);
+        String parentCondition = parentGroup.getCondition();
+
+        for (Group group : groups) {
+            query.addConditions(getOperator(parentCondition), parseRules(group, query));
+            parseGroup(group, query);
+        }
         return query;
     }
 
-    private SelectQuery parseRule(Item item, SelectQuery query, String operator) {
-        Rule rule = (Rule) item;
-        String tableName = rule.getId();
-
-        if (!getTableNames().contains(tableName)) {
-            query.addFrom(table(rule.getId()));
-            getTableNames().add(tableName);
+    private List<Rule> getRules(Group group) {
+        List<Rule> rules = new ArrayList<Rule>();
+        for (Item subItem : group.getRules()) {
+            if (subItem.getObjType().equals(ObjectTypes.RULE.toString().toLowerCase())) {
+                rules.add((Rule) subItem);
+            }
         }
-        query.addConditions(getOperator(operator), field(getFullFieldName(rule)).equal(rule.getValue()));
-        return query;
+        return rules;
+    }
+
+    private List<Group> getGroups(Group parentGroup) {
+        List<Group> groups = new ArrayList<Group>();
+        for (Item subItem : parentGroup.getRules()) {
+            if (subItem.getObjType().equals(ObjectTypes.GROUP.toString().toLowerCase())) {
+                groups.add((Group) subItem);
+            }
+        }
+        return groups;
     }
 
     private String getFullFieldName(Rule rule) {
@@ -72,10 +101,19 @@ public class QueryBuildService {
     }
 
     private Operator getOperator(String operatorStr) {
-        if (operatorStr.equals(Operator.OR.toString())){
+        if (operatorStr.equals(Operator.OR.toString())) {
             return Operator.OR;
         } else {
             return Operator.AND;
+        }
+    }
+
+    private void checkQueryTables(SelectQuery query, Rule rule) {
+        String tableName = rule.getId();
+
+        if (!getTableNames().contains(tableName)) {
+            query.addFrom(table(tableName));
+            getTableNames().add(tableName);
         }
     }
 
@@ -89,5 +127,4 @@ public class QueryBuildService {
     private void cleanQueryBuildServiceObject() {
         tableNames.clear();
     }
-
 }
