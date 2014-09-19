@@ -22,6 +22,11 @@ public class CarService {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    public static final String FULL_CAR_QUERY = "SELECT car.id, car.manufactor, car.model, car.color, " +
+            "car.door_quantity, car.create_date FROM Car " +
+            "LEFT JOIN driver ON driver.car_id = car.id " +
+            "LEFT JOIN company ON company.id = driver.company_id";
+
     public String getQueryString(Item item) {
         return queryBuildService.getQueryString(item);
     }
@@ -44,5 +49,11 @@ public class CarService {
 
     public List<Car> getJDBCFilteredCars(String queryString) {
         return jdbcTemplate.query(queryString, new CarMapper());
+    }
+
+    public String getFullCarQuery(String jooqQuery) {
+        int whereIndex = jooqQuery.indexOf("where");
+        String endQuery = jooqQuery.substring(whereIndex);
+        return FULL_CAR_QUERY + " " + endQuery;
     }
 }

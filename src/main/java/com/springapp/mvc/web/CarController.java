@@ -36,4 +36,14 @@ public class CarController {
     public @ResponseBody List<Car> filterWithJDBCExecution(@RequestBody Item item) {
         return carService.getJDBCFilteredCars(carService.getQueryString(item));
     }
+
+    @RequestMapping(value = "/concatQueries", method = RequestMethod.POST)
+    public @ResponseBody String buildFullQuery(@RequestBody Item item) {
+        return carService.getFullCarQuery(carService.getQueryString(item));
+    }
+
+    @RequestMapping(value = "/filteredWithFullQuery", method = RequestMethod.POST)
+    public @ResponseBody List<Car> filteredWithFullQuery(@RequestBody Item item) {
+        return carService.getJDBCFilteredCars(carService.getFullCarQuery(carService.getQueryString(item)));
+    }
 }

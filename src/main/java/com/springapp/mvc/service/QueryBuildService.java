@@ -7,7 +7,6 @@ import com.springapp.mvc.dto.ObjectTypes;
 import com.springapp.mvc.dto.Rule;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
-import org.jooq.Field;
 import org.jooq.Operator;
 import org.jooq.SelectQuery;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,8 +18,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static org.jooq.impl.DSL.condition;
-import static org.jooq.impl.DSL.falseCondition;
 import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.table;
 
