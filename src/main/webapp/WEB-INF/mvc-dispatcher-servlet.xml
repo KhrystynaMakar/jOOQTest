@@ -19,4 +19,16 @@
     <bean id="dslContextDatabase" class="com.springapp.mvc.service.DSLContextProvider"
           factory-bean="dslContextProvider" factory-method="initializedDatabase"/>
 
+    <!-- Initialization for data source -->
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+        <property name="url" value="jdbc:mysql://localhost:3306/jooqTest"/>
+        <property name="username" value="root"/>
+        <property name="password" value="root"/>
+    </bean>
+
+    <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+        <constructor-arg ref="dataSource"/>
+    </bean>
+
 </beans>

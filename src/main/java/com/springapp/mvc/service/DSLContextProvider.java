@@ -1,28 +1,26 @@
 package com.springapp.mvc.service;
 
-import com.springapp.mvc.DatabaseConnection;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
+import javax.sql.DataSource;
+import java.sql.SQLException;
 
 @Component
 public class DSLContextProvider {
+    @Autowired
+    private DataSource dataSource;
+
     public DSLContext initializedDatabase() {
-        Connection conn = null;
         try {
-            String userName = DatabaseConnection.USER;
-            String password = DatabaseConnection.PASSWORD;
-            String url = DatabaseConnection.URL;
-            Class.forName(DatabaseConnection.CONNECTION_DRIVER).newInstance();
-            conn = DriverManager.getConnection(url, userName, password);
-        } catch (Exception e) {
+            return DSL.using(dataSource.getConnection(), SQLDialect.MYSQL);
+        } catch (SQLException e) {
             e.printStackTrace();
-            System.out.println("Exception!: " + e);
+            System.out.println("There are some database connection exception");
+            return null;
         }
-        return DSL.using(conn, SQLDialect.MYSQL);
     }
 }

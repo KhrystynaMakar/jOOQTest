@@ -31,4 +31,9 @@ public class CarController {
     public @ResponseBody List<Car> showInfoFilteredCars(@RequestBody Item item) {
         return carService.getFilteredCars(item);
     }
+
+    @RequestMapping(value = "/JDBCFiltered", method = RequestMethod.POST)
+    public @ResponseBody List<Car> filterWithJDBCExecution(@RequestBody Item item) {
+        return carService.getJDBCFilteredCars(carService.getQueryString(item));
+    }
 }

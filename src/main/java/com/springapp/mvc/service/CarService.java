@@ -2,9 +2,11 @@ package com.springapp.mvc.service;
 
 import com.springapp.mvc.dto.Car;
 import com.springapp.mvc.dto.Item;
+import com.springapp.mvc.service.mapper.CarMapper;
 import org.jooq.Record;
 import org.jooq.Result;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -17,8 +19,10 @@ public class CarService {
     @Autowired
     private QueryBuildService queryBuildService;
 
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
     public String getQueryString(Item item) {
-        //QueryBuildService queryBuildService = new QueryBuildService();
         return queryBuildService.getQueryString(item);
     }
 
@@ -36,5 +40,9 @@ public class CarService {
             cars.add(car);
         }
         return cars;
+    }
+
+    public List<Car> getJDBCFilteredCars(String queryString) {
+        return jdbcTemplate.query(queryString, new CarMapper());
     }
 }
