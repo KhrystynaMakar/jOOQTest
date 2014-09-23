@@ -46,7 +46,7 @@ public class QueryBuildService {
         if (condition != null) {
             query.addConditions(getOperator(group.getCondition()), condition);
         }
-        parseGroup(group, query);
+        query.addConditions(getOperator(group.getCondition()),parseGroup(group, query));
         cleanQueryBuildServiceObject();
         return query;
     }
@@ -73,18 +73,36 @@ public class QueryBuildService {
         return null;
     }
 
-    private SelectQuery parseGroup(Group parentGroup, SelectQuery query) {
+    private Condition parseGroup(Group parentGroup, SelectQuery query) {
         logger.debug("Parse group.");
         List<Group> groups = getGroups(parentGroup);
-        String parentCondition = parentGroup.getCondition();
+        String parentConditionOperator = parentGroup.getCondition();
+        Condition groupCondition = null;
         for (Group group : groups) {
-            Condition condition = parseRules(group, query);
-            if (condition != null) {
-                query.addConditions(getOperator(parentCondition), condition);
+            Condition ruleCondition = parseRules(group, query);
+            if (ruleCondition != null) {
+                groupCondition = (groupCondition == null) ? ruleCondition : clarifyCondition(groupCondition,
+                        parentConditionOperator, ruleCondition);
             }
-            parseGroup(group, query);
+
+            if (!getGroups(group).isEmpty()) {
+                if (groupCondition == null) {
+                    groupCondition = parseGroup(group, query);
+                } else {
+                    groupCondition = clarifyCondition(groupCondition, group.getCondition(), parseGroup(group, query) );
+                }
+            }
         }
-        return query;
+         return groupCondition;
+    }
+
+    private Condition clarifyCondition(Condition groupConditions, String operator, Condition condition) {
+        if (operator.equals("OR")) {
+            groupConditions = groupConditions.or(condition);
+        } else {
+            groupConditions = groupConditions.and(condition);
+        }
+        return groupConditions;
     }
 
     private List<Rule> getRules(Group group) {
