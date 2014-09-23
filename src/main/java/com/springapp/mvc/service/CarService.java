@@ -37,7 +37,7 @@ public class CarService {
         } catch (Exception e) {
             e.printStackTrace();
             logger.error("JOOQ query builder problem", e);
-            return "JOOQ query builder problem";
+            return null;
         }
     }
 
@@ -75,13 +75,23 @@ public class CarService {
 
     public String getFullCarQuery(String jooqQuery) {
         try {
-            int whereIndex = jooqQuery.indexOf("where");
-            String endQuery = jooqQuery.substring(whereIndex);
-            return FULL_CAR_QUERY + " " + endQuery;
+
+            return FULL_CAR_QUERY + " " + verifyQueryString(jooqQuery);
         } catch (Exception e) {
             e.printStackTrace();
             logger.error("Exception while concat query", e);
-            return "Exception while concat query";
+            return null;
+        }
+    }
+
+    private String verifyQueryString(String jooqQuery) {
+        try {
+            int whereIndex = jooqQuery.indexOf("where");
+            return jooqQuery.substring(whereIndex);
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+            logger.error("Exception... queryString object is null");
+            return null;
         }
     }
 }
