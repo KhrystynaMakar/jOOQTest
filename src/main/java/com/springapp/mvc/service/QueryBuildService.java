@@ -9,7 +9,6 @@ import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Operator;
 import org.jooq.SelectQuery;
-import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +20,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static org.jooq.impl.DSL.condition;
 import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.table;
 
