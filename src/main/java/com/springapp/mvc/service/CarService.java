@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.jooqtest.model.tables.Car.CAR;
 
@@ -22,38 +24,74 @@ public class CarService {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    public static final Logger logger = LoggerFactory.getLogger(CarService.class);
+
     public static final String FULL_CAR_QUERY = "SELECT car.id, car.manufactor, car.model, car.color, " +
             "car.door_quantity, car.create_date FROM Car " +
             "LEFT JOIN driver ON driver.car_id = car.id " +
             "LEFT JOIN company ON company.id = driver.company_id";
 
     public String getQueryString(Item item) {
-        return queryBuildService.getQueryString(item);
+        try {
+            return queryBuildService.getQueryString(item);
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error("JOOQ query builder problem", e);
+            return null;
+        }
     }
 
     public List<Car> getFilteredCars(Item item) {
-        List<Car> cars = new ArrayList<Car>();
-        Result<Record> records = queryBuildService.getQuery(item).fetch();
-        for (Record record : records) {
-            Car car = new Car();
-            car.setId(record.getValue(CAR.ID));
-            car.setManufactor(record.getValue(CAR.MANUFACTOR));
-            car.setModel(record.getValue(CAR.MODEL));
-            car.setCreateDate(record.getValue(CAR.CREATE_DATE));
-            car.setColor(record.getValue(CAR.COLOR));
-            car.setDoorQuantity(record.getValue(CAR.DOOR_QUANTITY));
-            cars.add(car);
+        try {
+            List<Car> cars = new ArrayList<Car>();
+            Result<Record> records = queryBuildService.getQuery(item).fetch();
+            for (Record record : records) {
+                Car car = new Car();
+                car.setId(record.getValue(CAR.ID));
+                car.setManufactor(record.getValue(CAR.MANUFACTOR));
+                car.setModel(record.getValue(CAR.MODEL));
+                car.setCreateDate(record.getValue(CAR.CREATE_DATE));
+                car.setColor(record.getValue(CAR.COLOR));
+                car.setDoorQuantity(record.getValue(CAR.DOOR_QUANTITY));
+                cars.add(car);
+            }
+            return cars;
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error("jOOQ query executing exception", e);
+            return null;
         }
-        return cars;
     }
 
     public List<Car> getJDBCFilteredCars(String queryString) {
-        return jdbcTemplate.query(queryString, new CarMapper());
+        try {
+            return jdbcTemplate.query(queryString, new CarMapper());
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error("Exception while jOOQ query has been executed by JDBC connector.", e);
+            return null;
+        }
     }
 
     public String getFullCarQuery(String jooqQuery) {
-        int whereIndex = jooqQuery.indexOf("where");
-        String endQuery = jooqQuery.substring(whereIndex);
-        return FULL_CAR_QUERY + " " + endQuery;
+        try {
+
+            return FULL_CAR_QUERY + " " + verifyQueryString(jooqQuery);
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error("Exception while concat query", e);
+            return null;
+        }
+    }
+
+    private String verifyQueryString(String jooqQuery) {
+        try {
+            int whereIndex = jooqQuery.indexOf("where");
+            return jooqQuery.substring(whereIndex);
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+            logger.error("Exception... queryString object is null");
+            return null;
+        }
     }
 }
