@@ -9,6 +9,9 @@ import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Operator;
 import org.jooq.SelectQuery;
+import org.jooq.impl.DSL;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -18,6 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static org.jooq.impl.DSL.condition;
 import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.table;
 
@@ -29,16 +33,21 @@ public class QueryBuildService {
 
     private Set<String> tableNames;
 
+    public static final Logger logger = LoggerFactory.getLogger(QueryBuildService.class);
+
     public String getQueryString(Item item) {
+        logger.debug("Get query string");
         return dslContextDatabase.renderInlined(getQuery(item));
     }
 
     public SelectQuery getQuery(Item item) {
+        logger.debug("Get query.");
         Group group = (Group) item;
         SelectQuery query = dslContextDatabase.selectQuery();
-
         Condition condition = parseRules(group, query);
-        query.addConditions(getOperator(group.getCondition()), condition);
+        if (condition != null) {
+            query.addConditions(getOperator(group.getCondition()), condition);
+        }
         parseGroup(group, query);
         cleanQueryBuildServiceObject();
         return query;
@@ -46,28 +55,35 @@ public class QueryBuildService {
 
     private Condition parseRules(Group group, SelectQuery query) {
         List<Rule> rules = getRules(group);
-        String operator = group.getCondition();
-        Condition condition = field(getFullFieldName(rules.get(0))).equal(rules.get(0).getValue());
-        checkQueryTables(query, rules.get(0));
+        if (!rules.isEmpty()) {
+            logger.debug("Parse rules.");
+            String operator = group.getCondition();
+            Condition condition = field(getFullFieldName(rules.get(0))).equal(rules.get(0).getValue());
+            checkQueryTables(query, rules.get(0));
 
-        for (int i = 1; i < rules.size(); i++) {
-            Rule rule = rules.get(i);
-            checkQueryTables(query, rule);
-            if (operator.equals("OR")) {
-               condition = condition.or(field(getFullFieldName(rule)).equal(rule.getValue()));
-            } else {
-               condition = condition.and(field(getFullFieldName(rule)).equal(rule.getValue()));
+            for (int i = 1; i < rules.size(); i++) {
+                Rule rule = rules.get(i);
+                checkQueryTables(query, rule);
+                if (operator.equals("OR")) {
+                    condition = condition.or(field(getFullFieldName(rule)).equal(rule.getValue()));
+                } else {
+                    condition = condition.and(field(getFullFieldName(rule)).equal(rule.getValue()));
+                }
             }
+            return condition;
         }
-        return condition;
+        return null;
     }
 
     private SelectQuery parseGroup(Group parentGroup, SelectQuery query) {
+        logger.debug("Parse group.");
         List<Group> groups = getGroups(parentGroup);
         String parentCondition = parentGroup.getCondition();
-
         for (Group group : groups) {
-            query.addConditions(getOperator(parentCondition), parseRules(group, query));
+            Condition condition = parseRules(group, query);
+            if (condition != null) {
+                query.addConditions(getOperator(parentCondition), condition);
+            }
             parseGroup(group, query);
         }
         return query;
