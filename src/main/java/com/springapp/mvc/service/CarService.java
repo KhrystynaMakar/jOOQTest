@@ -74,24 +74,21 @@ public class CarService {
     }
 
     public String getFullCarQuery(String jooqQuery) {
-        try {
-
-            return FULL_CAR_QUERY + " " + verifyQueryString(jooqQuery);
-        } catch (Exception e) {
-            e.printStackTrace();
-            logger.error("Exception while concat query", e);
-            return null;
-        }
+        return FULL_CAR_QUERY + " " + verifyQueryString(jooqQuery);
     }
 
-    private String verifyQueryString(String jooqQuery) {
-        try {
+    protected String verifyQueryString(String jooqQuery) {
+//        try {
             int whereIndex = jooqQuery.indexOf("where");
             return jooqQuery.substring(whereIndex);
-        } catch (NullPointerException e) {
+        /*} catch (NullPointerException e) {
             e.printStackTrace();
             logger.error("Exception... queryString object is null");
             return null;
-        }
+        } catch (StringIndexOutOfBoundsException e) {
+            e.printStackTrace();
+            logger.error("Exception... queryString does not contain word 'where'");
+            return null;
+        }*/
     }
 }

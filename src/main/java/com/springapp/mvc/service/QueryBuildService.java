@@ -96,7 +96,7 @@ public class QueryBuildService {
          return groupCondition;
     }
 
-    private Condition clarifyCondition(Condition groupConditions, String operator, Condition condition) {
+    public Condition clarifyCondition(Condition groupConditions, String operator, Condition condition) {
         if (operator.equals("OR")) {
             groupConditions = groupConditions.or(condition);
         } else {
@@ -105,7 +105,7 @@ public class QueryBuildService {
         return groupConditions;
     }
 
-    private List<Rule> getRules(Group group) {
+    public List<Rule> getRules(Group group) {
         List<Rule> rules = new ArrayList<Rule>();
         for (Item subItem : group.getRules()) {
             if (subItem.getObjType().equals(ObjectTypes.RULE.toString().toLowerCase())) {
@@ -115,7 +115,7 @@ public class QueryBuildService {
         return rules;
     }
 
-    private List<Group> getGroups(Group parentGroup) {
+    public List<Group> getGroups(Group parentGroup) {
         List<Group> groups = new ArrayList<Group>();
         for (Item subItem : parentGroup.getRules()) {
             if (subItem.getObjType().equals(ObjectTypes.GROUP.toString().toLowerCase())) {
@@ -125,11 +125,11 @@ public class QueryBuildService {
         return groups;
     }
 
-    private String getFullFieldName(Rule rule) {
+    public String getFullFieldName(Rule rule) {
         return rule.getId() + "." + rule.getField();
     }
 
-    private Operator getOperator(String operatorStr) {
+    public Operator getOperator(String operatorStr) {
         if (operatorStr.equals(Operator.OR.toString())) {
             return Operator.OR;
         } else {
