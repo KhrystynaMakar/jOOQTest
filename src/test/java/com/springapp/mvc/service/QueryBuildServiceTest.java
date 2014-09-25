@@ -95,8 +95,7 @@ public class QueryBuildServiceTest {
         Condition condition = field("car.model"). equal("Kuga");
         Condition expectedAndCondition = groupCondition.and(condition);
 
-        Assert.assertEquals(expectedAndCondition, queryBuildService.clarifyCondition(groupCondition, "AND",
-                condition));
+        Assert.assertEquals(expectedAndCondition, queryBuildService.clarifyCondition(groupCondition, "AND", condition));
 
         Condition expectedOrCondition = groupCondition.or(condition);
         Assert.assertEquals(expectedOrCondition, queryBuildService.clarifyCondition(groupCondition, "OR", condition));
@@ -126,5 +125,8 @@ public class QueryBuildServiceTest {
     public void testGetOperator() throws Exception {
         String orOperator = "OR";
         Assert.assertEquals(Operator.OR, queryBuildService.getOperator(orOperator));
+
+        String andOperator = "AND";
+        Assert.assertEquals(Operator.AND, queryBuildService.getOperator(andOperator));
     }
 }

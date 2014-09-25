@@ -31,13 +31,13 @@ public class CarService {
             "LEFT JOIN driver ON driver.car_id = car.id " +
             "LEFT JOIN company ON company.id = driver.company_id";
 
-    public String getQueryString(Item item) {
+    public String getQueryString(Item item) throws IllegalArgumentException {
         try {
             return queryBuildService.getQueryString(item);
-        } catch (Exception e) {
+        } catch (IllegalArgumentException e) {
             e.printStackTrace();
             logger.error("JOOQ query builder problem", e);
-            return null;
+            throw new IllegalArgumentException("The argument 'conditions' must not contain null");
         }
     }
 
@@ -78,17 +78,7 @@ public class CarService {
     }
 
     protected String verifyQueryString(String jooqQuery) {
-//        try {
-            int whereIndex = jooqQuery.indexOf("where");
-            return jooqQuery.substring(whereIndex);
-        /*} catch (NullPointerException e) {
-            e.printStackTrace();
-            logger.error("Exception... queryString object is null");
-            return null;
-        } catch (StringIndexOutOfBoundsException e) {
-            e.printStackTrace();
-            logger.error("Exception... queryString does not contain word 'where'");
-            return null;
-        }*/
+        int whereIndex = jooqQuery.indexOf("where");
+        return jooqQuery.substring(whereIndex);
     }
 }

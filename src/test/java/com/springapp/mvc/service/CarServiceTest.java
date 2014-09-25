@@ -23,6 +23,15 @@ public class CarServiceTest {
         Assert.assertEquals(expectedString, carService.getFullCarQuery(queryEnd));
     }
 
+    @Test(expected = NullPointerException.class)
+    public void testGetFullCarQueryWithNull() throws Exception {
+        String expectedString = "SELECT car.id, car.manufactor, car.model, car.color, " +
+                "car.door_quantity, car.create_date FROM Car " +
+                "LEFT JOIN driver ON driver.car_id = car.id " +
+                "LEFT JOIN company ON company.id = driver.company_id" + " where id=3";
+        Assert.assertEquals(expectedString, carService.getFullCarQuery(null));
+    }
+
     @Test
     public void testVerifyQueryString() throws Exception {
         String testString = "Maybe you know where is my mind?";
