@@ -17,6 +17,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.jooq.impl.DSL.field;
@@ -32,6 +33,9 @@ public class QueryBuildServiceTest {
 
     @Autowired
     private QueryBuildService queryBuildService;
+
+    @Autowired
+    private ItemBuilder itemBuilder;
 
     private Item item;
 
@@ -92,7 +96,7 @@ public class QueryBuildServiceTest {
     @Test
     public void testClarifyCondition() throws Exception {
         Condition groupCondition = field("car.color").equal("red");
-        Condition condition = field("car.model"). equal("Kuga");
+        Condition condition = field("car.model").equal("Kuga");
         Condition expectedAndCondition = groupCondition.and(condition);
 
         Assert.assertEquals(expectedAndCondition, queryBuildService.clarifyCondition(groupCondition, "AND", condition));
@@ -103,12 +107,12 @@ public class QueryBuildServiceTest {
 
     @Test
     public void testGetRules() throws Exception {
-        Assert.assertEquals(2, queryBuildService.getRules((Group)item).size());
+        Assert.assertEquals(2, queryBuildService.getRules((Group) item).size());
     }
 
     @Test
     public void testGetGroups() throws Exception {
-        Assert.assertEquals(1, queryBuildService.getGroups((Group)item).size());
+        Assert.assertEquals(1, queryBuildService.getGroups((Group) item).size());
     }
 
     @Test
@@ -128,5 +132,58 @@ public class QueryBuildServiceTest {
 
         String andOperator = "AND";
         Assert.assertEquals(Operator.AND, queryBuildService.getOperator(andOperator));
+    }
+
+    @Test
+    public void testQueryBuildOfRules() throws Exception {
+        List<Item> rules = Arrays.asList(ItemBuilder.CAR_RED, ItemBuilder.CAR_KUGA);
+        Item item = itemBuilder.build(rules, "OR");
+        String expectedQuery = "select * from car where (car.color = 'red' or car.model = 'Kuga')";
+        Assert.assertEquals(expectedQuery, queryBuildService.getQueryString(item));
+    }
+
+    @Test
+    public void testQueryBuildOfRule() throws Exception {
+        List<Item> rules = Arrays.asList(ItemBuilder.CAR_RED);
+        Item item = itemBuilder.build(rules, "OR");
+        String expectedQuery = "select * from car where car.color = 'red'";
+        Assert.assertEquals(expectedQuery, queryBuildService.getQueryString(item));
+    }
+
+    @Test
+    public void testQueryBuildOfRuleAndGroup() throws Exception {
+        Item group = itemBuilder.build(Arrays.asList(ItemBuilder.CAR_RED, ItemBuilder.CAR_KUGA), "OR");
+
+        Item testedItem = itemBuilder.build(Arrays.asList(group, ItemBuilder.CAR_3), "AND");
+        String expectedQuery = "select * from car where (car.id = '3' and (car.color = 'red' or car.model = 'Kuga')" +
+                ")";
+        Assert.assertEquals(expectedQuery, queryBuildService.getQueryString(testedItem));
+    }
+
+    @Test
+    public void testQueryBuildOfGroups() throws Exception {
+        Item group1 = itemBuilder.build(Arrays.asList(ItemBuilder.CAR_BLUE, ItemBuilder.DRIVER_MAKAR), "AND");
+        Item group2 = itemBuilder.build(Arrays.asList(ItemBuilder.CAR_BLACK, ItemBuilder.DRIVER_SLAVIK), "OR");
+        Item testedItem = itemBuilder.build(Arrays.asList(group1, group2), "OR");
+        String expectedString = "select * from car, driver where ((car.color = 'blue' and driver.last_name = " +
+                "'Makar') or car.color = 'black' or driver.first_name = 'Slavik')";
+        Assert.assertEquals(expectedString, queryBuildService.getQueryString(testedItem));
+    }
+
+    @Test
+    public void testQueryBuildOf5NestedGroups() throws Exception {
+        Item group1 = itemBuilder.build(Arrays.asList(ItemBuilder.CAR_BLUE, ItemBuilder.DRIVER_MAKAR), "AND");
+        Item group3 = itemBuilder.build(Arrays.asList(ItemBuilder.CAR_RED), "OR");
+        Item group4 = itemBuilder.build(Arrays.asList(ItemBuilder.CAR_3, ItemBuilder.CAR_GOLD), "AND");
+        Item group5 = itemBuilder.build(Arrays.asList(ItemBuilder.CAR_BLACK, ItemBuilder.CAR_GOLD), "OR");
+
+        Item group21 = itemBuilder.build(Arrays.asList(group1, ItemBuilder.DRIVER_MAKAR), "OR");
+        Item group3214 = itemBuilder.build(Arrays.asList(group3, group21, group4), "OR");
+        Item group6 = itemBuilder.build(Arrays.asList(group3214, group5), "AND");
+        Item testedItem = itemBuilder.build(Arrays.asList(group6, ItemBuilder.CAR_GOLD), "OR");
+        String expectedString = "select * from car, driver where " +
+                "(car.color = 'gold' or ((car.color = 'red' or driver.last_name = 'Makar' or (car.color = 'blue' and" +
+                " driver.last_name = 'Makar') or (car.id = '3' and car.color = 'gold')) and (car.color = 'black' or car.color = 'gold')))";
+        Assert.assertEquals(expectedString, queryBuildService.getQueryString(testedItem));
     }
 }
