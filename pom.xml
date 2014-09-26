@@ -214,6 +214,7 @@
                 </executions>
             </plugin>
             <!-- jOOQ plagins ***************************************************** -->
+            <!-- Emma plagins ***************************************************** -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>emma-maven-plugin</artifactId>
@@ -226,45 +227,4 @@
             </resource>
         </resources>-->
     </build>
-
-    <!-- Emma plagins ***************************************************** -->
-
-    <!--<reporting>
-        <plugins>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>emma-maven-plugin</artifactId>
-                <version>1.0-alpha-3</version>
-                <inherited>true</inherited>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>surefire-report-maven-plugin</artifactId>
-                <inherited>true</inherited>
-            </plugin>
-        </plugins>
-    </reporting>-->
-    <!-- <reporting>
-         <plugins>
-             &lt;!&ndash; Normally, dependency report takes time, skip it &ndash;&gt;
-             <plugin>
-                 <groupId>org.apache.maven.plugins</groupId>
-                 <artifactId>maven-project-info-reports-plugin</artifactId>
-                 <version>2.7</version>
-
-                 <configuration>
-                     <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
-                 </configuration>
-             </plugin>
-
-             &lt;!&ndash; integrate maven emma plugin to project site &ndash;&gt;
-             <plugin>
-                 <groupId>org.codehaus.mojo</groupId>
-                 <artifactId>emma-maven-plugin</artifactId>
-                 <version>1.0-alpha-3</version>
-                 &lt;!&ndash;<inherited>true</inherited>&ndash;&gt;
-             </plugin>
-
-         </plugins>
-     </reporting>-->
 </project>
