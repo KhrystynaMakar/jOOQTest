@@ -29,6 +29,8 @@ public class QueryBuildService {
     @Qualifier("dslContextDatabase")
     private DSLContext dslContextDatabase;
 
+    public static final int FIRST_RULE_INDEX = 0;
+
     private Set<String> tableNames;
 
     public static final Logger logger = LoggerFactory.getLogger(QueryBuildService.class);
@@ -42,11 +44,14 @@ public class QueryBuildService {
         logger.debug("Get query.");
         Group group = (Group) item;
         SelectQuery query = dslContextDatabase.selectQuery();
-        Condition condition = parseRules(group, query);
-        if (condition != null) {
-            query.addConditions(getOperator(group.getCondition()), condition);
+        Condition rulesCondition = parseRules(group, query);
+        if (rulesCondition != null) {
+            query.addConditions(getOperator(group.getCondition()), rulesCondition);
         }
-        query.addConditions(getOperator(group.getCondition()),parseGroup(group, query));
+        Condition groupsCondition = parseGroup(group, query);
+        if (groupsCondition != null) {
+            query.addConditions(getOperator(group.getCondition()), groupsCondition);
+        }
         cleanQueryBuildServiceObject();
         return query;
     }
@@ -56,8 +61,8 @@ public class QueryBuildService {
         if (!rules.isEmpty()) {
             logger.debug("Parse rules.");
             String operator = group.getCondition();
-            Condition condition = field(getFullFieldName(rules.get(0))).equal(rules.get(0).getValue());
-            checkQueryTables(query, rules.get(0));
+            Condition condition = field(getFullFieldName(rules.get(FIRST_RULE_INDEX))).equal(rules.get(FIRST_RULE_INDEX).getValue());
+            checkQueryTables(query, rules.get(FIRST_RULE_INDEX));
 
             for (int i = 1; i < rules.size(); i++) {
                 Rule rule = rules.get(i);
@@ -93,10 +98,10 @@ public class QueryBuildService {
                 }
             }
         }
-         return groupCondition;
+        return groupCondition;
     }
 
-    private Condition clarifyCondition(Condition groupConditions, String operator, Condition condition) {
+    public Condition clarifyCondition(Condition groupConditions, String operator, Condition condition) {
         if (operator.equals("OR")) {
             groupConditions = groupConditions.or(condition);
         } else {
@@ -105,7 +110,7 @@ public class QueryBuildService {
         return groupConditions;
     }
 
-    private List<Rule> getRules(Group group) {
+    public List<Rule> getRules(Group group) {
         List<Rule> rules = new ArrayList<Rule>();
         for (Item subItem : group.getRules()) {
             if (subItem.getObjType().equals(ObjectTypes.RULE.toString().toLowerCase())) {
@@ -115,7 +120,7 @@ public class QueryBuildService {
         return rules;
     }
 
-    private List<Group> getGroups(Group parentGroup) {
+    public List<Group> getGroups(Group parentGroup) {
         List<Group> groups = new ArrayList<Group>();
         for (Item subItem : parentGroup.getRules()) {
             if (subItem.getObjType().equals(ObjectTypes.GROUP.toString().toLowerCase())) {
@@ -125,11 +130,11 @@ public class QueryBuildService {
         return groups;
     }
 
-    private String getFullFieldName(Rule rule) {
+    public String getFullFieldName(Rule rule) {
         return rule.getId() + "." + rule.getField();
     }
 
-    private Operator getOperator(String operatorStr) {
+    public Operator getOperator(String operatorStr) {
         if (operatorStr.equals(Operator.OR.toString())) {
             return Operator.OR;
         } else {

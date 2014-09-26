@@ -1,0 +1,30 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+    <mvc:annotation-driven />
+
+    <bean id="dslContextProvider" class="com.springapp.mvc.service.DSLContextProvider"/>
+    <bean id="dslContextDatabase" class="com.springapp.mvc.service.DSLContextProvider"
+          factory-bean="dslContextProvider" factory-method="initializedDatabase"/>
+
+    <!-- Initialization for data source -->
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+        <property name="url" value="jdbc:mysql://localhost:3306/jooqTest"/>
+        <property name="username" value="root"/>
+        <property name="password" value="root"/>
+    </bean>
+
+    <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+        <constructor-arg ref="dataSource"/>
+    </bean>
+
+    <bean class="com.springapp.mvc.service.ItemBuilder"/>
+    <bean class="com.springapp.mvc.service.QueryBuildService"/>
+    <bean class="com.springapp.mvc.service.CarService"/>
+
+</beans>
