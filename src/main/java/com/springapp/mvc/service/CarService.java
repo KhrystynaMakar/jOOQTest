@@ -32,45 +32,27 @@ public class CarService {
             "LEFT JOIN company ON company.id = driver.company_id";
 
     public String getQueryString(Item item) throws IllegalArgumentException {
-        try {
-            return queryBuildService.getQueryString(item);
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
-            logger.error("JOOQ query builder problem", e);
-            throw new IllegalArgumentException("The argument 'conditions' must not contain null");
-        }
+        return queryBuildService.getQueryString(item);
     }
 
     public List<Car> getFilteredCars(Item item) {
-        try {
-            List<Car> cars = new ArrayList<Car>();
-            Result<Record> records = queryBuildService.getQuery(item).fetch();
-            for (Record record : records) {
-                Car car = new Car();
-                car.setId(record.getValue(CAR.ID));
-                car.setManufactor(record.getValue(CAR.MANUFACTOR));
-                car.setModel(record.getValue(CAR.MODEL));
-                car.setCreateDate(record.getValue(CAR.CREATE_DATE));
-                car.setColor(record.getValue(CAR.COLOR));
-                car.setDoorQuantity(record.getValue(CAR.DOOR_QUANTITY));
-                cars.add(car);
-            }
-            return cars;
-        } catch (Exception e) {
-            e.printStackTrace();
-            logger.error("jOOQ query executing exception", e);
-            return null;
+        List<Car> cars = new ArrayList<Car>();
+        Result<Record> records = queryBuildService.getQuery(item).fetch();
+        for (Record record : records) {
+            Car car = new Car();
+            car.setId(record.getValue(CAR.ID));
+            car.setManufactor(record.getValue(CAR.MANUFACTOR));
+            car.setModel(record.getValue(CAR.MODEL));
+            car.setCreateDate(record.getValue(CAR.CREATE_DATE));
+            car.setColor(record.getValue(CAR.COLOR));
+            car.setDoorQuantity(record.getValue(CAR.DOOR_QUANTITY));
+            cars.add(car);
         }
+        return cars;
     }
 
     public List<Car> getJDBCFilteredCars(String queryString) {
-        try {
-            return jdbcTemplate.query(queryString, new CarMapper());
-        } catch (Exception e) {
-            e.printStackTrace();
-            logger.error("Exception while jOOQ query has been executed by JDBC connector.", e);
-            return null;
-        }
+        return jdbcTemplate.query(queryString, new CarMapper());
     }
 
     public String getFullCarQuery(String jooqQuery) {

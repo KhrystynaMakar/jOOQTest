@@ -23,14 +23,13 @@ public class DSLContextProvider {
             return DSL.using(dataSource.getConnection(), SQLDialect.MYSQL);
         } catch (SQLException e) {
             e.printStackTrace();
-            System.out.println("There are some database connection exception");
+            logger.error("There are some database connection exception", e);
             return null;
         }
     }
 
     public DSLContextProvider (DataSource dataSource) {
         this.dataSource = dataSource;
-        initializedDatabase();
     }
 
     public DSLContextProvider() {
