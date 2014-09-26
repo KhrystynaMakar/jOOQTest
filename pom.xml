@@ -144,8 +144,9 @@
                 <configuration>
                     <includes>
                         <include>**/*Test.java</include>
-                        <classesDirectory>${project.build.directory}/generated-classes/emma/classes</classesDirectory>
+                        <!--<classesDirectory>${project.build.directory}/generated-classes/emma/classes</classesDirectory>-->
                     </includes>
+                    <argLine>-XX:-UseSplitVerifier</argLine>
                 </configuration>
             </plugin>
 
@@ -188,7 +189,6 @@
                         </generate>
                         <target>
                             <packageName>com.jooqtest.model</packageName>
-                            <!--<directory>src/main/java/com/springapp/mvc</directory>-->
                             <directory>src/main/java</directory>
                         </target>
                     </generator>
@@ -207,7 +207,6 @@
                         </goals>
                         <configuration>
                             <sources>
-                                <!--<source>src/main/java/com/springapp/mvc</source>-->
                                 <source>src/main/java</source>
                             </sources>
                         </configuration>
@@ -215,6 +214,11 @@
                 </executions>
             </plugin>
             <!-- jOOQ plagins ***************************************************** -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>emma-maven-plugin</artifactId>
+                <version>1.0-alpha-3</version>
+            </plugin>
         </plugins>
         <!--<resources>
             <resource>
@@ -224,27 +228,43 @@
     </build>
 
     <!-- Emma plagins ***************************************************** -->
-    <reporting>
+
+    <!--<reporting>
         <plugins>
-            <!-- Normally, dependency report takes time, skip it -->
-            <!--<plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-project-info-reports-plugin</artifactId>
-                <version>2.7</version>
-
-                <configuration>
-                    <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
-                </configuration>
-            </plugin>-->
-
-            <!-- integrate maven emma plugin to project site -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>emma-maven-plugin</artifactId>
                 <version>1.0-alpha-3</version>
-                <!--<inherited>true</inherited>-->
+                <inherited>true</inherited>
             </plugin>
-
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>surefire-report-maven-plugin</artifactId>
+                <inherited>true</inherited>
+            </plugin>
         </plugins>
-    </reporting>
+    </reporting>-->
+    <!-- <reporting>
+         <plugins>
+             &lt;!&ndash; Normally, dependency report takes time, skip it &ndash;&gt;
+             <plugin>
+                 <groupId>org.apache.maven.plugins</groupId>
+                 <artifactId>maven-project-info-reports-plugin</artifactId>
+                 <version>2.7</version>
+
+                 <configuration>
+                     <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
+                 </configuration>
+             </plugin>
+
+             &lt;!&ndash; integrate maven emma plugin to project site &ndash;&gt;
+             <plugin>
+                 <groupId>org.codehaus.mojo</groupId>
+                 <artifactId>emma-maven-plugin</artifactId>
+                 <version>1.0-alpha-3</version>
+                 &lt;!&ndash;<inherited>true</inherited>&ndash;&gt;
+             </plugin>
+
+         </plugins>
+     </reporting>-->
 </project>

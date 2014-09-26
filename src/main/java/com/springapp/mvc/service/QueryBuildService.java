@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Set;
 
 import static org.jooq.impl.DSL.field;
-import static org.jooq.impl.DSL.regrR2;
 import static org.jooq.impl.DSL.table;
 
 @Component
