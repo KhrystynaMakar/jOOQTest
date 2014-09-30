@@ -1,9 +1,9 @@
 package com.springapp.mvc.service;
 
+import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import junit.framework.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -13,14 +13,12 @@ import javax.sql.DataSource;
 @ContextConfiguration("classpath:test-context.xml")
 public class DSLContextProviderTest {
 
-    @Autowired
-    private DataSource fakeDataSource;
-
     private DSLContextProvider dslContextProvider;
 
     @Test
     public void testInitializedDatabase() throws Exception {
-        dslContextProvider = new DSLContextProvider(fakeDataSource);
+        DataSource ds = new MysqlDataSource();
+        dslContextProvider = new DSLContextProvider(ds);
         Assert.assertEquals(null, dslContextProvider.initializedDatabase());
     }
 }

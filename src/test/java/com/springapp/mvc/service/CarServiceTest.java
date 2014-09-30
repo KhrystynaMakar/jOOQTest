@@ -1,20 +1,14 @@
 package com.springapp.mvc.service;
 
-import com.springapp.mvc.dto.Car;
-import com.springapp.mvc.dto.Group;
 import com.springapp.mvc.dto.Item;
-import com.springapp.mvc.dto.Rule;
 import junit.framework.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration("classpath:test-context.xml")
@@ -81,22 +75,5 @@ public class CarServiceTest {
         String expectedString = "select * from car where (car.color = 'red' and car.model = 'Kuga' and car" +
                 ".manufactor = 'Toyota')";
         Assert.assertEquals(expectedString, carService.getQueryString(testedItem));
-    }
-
-
-
-
-    @Test
-    public void testGetFilteredCars() {
-        Item item = itemBuilder.build(Arrays.asList(ItemBuilder.CAR_RED), "OR");
-        List<Car> cars = carService.getFilteredCars(item);
-        Assert.assertEquals("red", cars.get(0).getColor());
-    }
-
-    @Test
-    public void testGetJDBCFilteredCars() {
-        String query = "select * from car where car.color = 'red'";
-        List<Car> cars = carService.getJDBCFilteredCars(query);
-        Assert.assertEquals("red", cars.get(0).getColor());
     }
 }
