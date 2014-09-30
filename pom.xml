@@ -10,13 +10,18 @@
     <properties>
         <spring.version>3.2.0.RELEASE</spring.version>
         <spring-jdbc>3.0.4.RELEASE</spring-jdbc>
-        <jdbc.driver>com.mysql.jdbc.Driver</jdbc.driver>
         <mysql.version>5.1.31</mysql.version>
         <jdk.version>1.7</jdk.version>
         <jooq.version>3.3.2</jooq.version>
         <jooq-codegen.version>3.3.2</jooq-codegen.version>
         <mysql-connector-java>5.1.30</mysql-connector-java>
         <mockito-all>1.9.5</mockito-all>
+
+        <h2.user>sa</h2.user>
+        <h2.password></h2.password>
+        <h2.url>jdbc:h2:target/db/testdb</h2.url>
+        <h2.database.name>testdb</h2.database.name>
+        <h2.driver>org.h2.Driver</h2.driver>
     </properties>
 
     <profiles>
@@ -30,6 +35,7 @@
                 <jdbc.password>root</jdbc.password>
                 <jdbc.url>jdbc:mysql://localhost:3306/jooqtest</jdbc.url>
                 <jdbc.database.name>jooqtest</jdbc.database.name>
+                <jdbc.driver>com.mysql.jdbc.Driver</jdbc.driver>
             </properties>
         </profile>
     </profiles>
@@ -125,6 +131,13 @@
             <version>1.7.7</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>1.3.168</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -144,7 +157,7 @@
                 <configuration>
                     <includes>
                         <include>**/*Test.java</include>
-                        <!--<classesDirectory>${project.build.directory}/generated-classes/emma/classes</classesDirectory>-->
+                        <include>**/*TestIT.java</include>
                     </includes>
                     <argLine>-XX:-UseSplitVerifier</argLine>
                 </configuration>
@@ -157,9 +170,66 @@
                 <version>3.3.2</version>
                 <executions>
                     <execution>
+                        <id>pre-it</id>
+                        <phase>pre-integration-test</phase>
                         <goals>
                             <goal>generate</goal>
                         </goals>
+                        <configuration>
+                            <jdbc>
+                                <driver>${h2.driver}</driver>
+                                <url>${h2.url}</url>
+                                <user>${h2.user}</user>
+                                <password>${h2.password}</password>
+                            </jdbc>
+                            <generator>
+                                <name>org.jooq.util.DefaultGenerator</name>
+                                <database>
+                                    <name>org.jooq.util.h2.H2Database</name>
+                                    <includes>.*</includes>
+                                    <excludes/>
+                                    <inputSchema>${h2.database.name}</inputSchema>
+                                </database>
+                                <generate>
+                                    <deprecated>false</deprecated>
+                                </generate>
+                                <target>
+                                    <packageName>com.jooqtest.model</packageName>
+                                    <directory>src/main/java</directory>
+                                </target>
+                            </generator>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>post-it</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <jdbc>
+                                <driver>${jdbc.driver}</driver>
+                                <url>${jdbc.url}</url>
+                                <user>${jdbc.user}</user>
+                                <password>${jdbc.password}</password>
+                            </jdbc>
+                            <generator>
+                                <name>org.jooq.util.DefaultGenerator</name>
+                                <database>
+                                    <name>org.jooq.util.mysql.MySQLDatabase</name>
+                                    <includes>.*</includes>
+                                    <excludes/>
+                                    <inputSchema>${jdbc.database.name}</inputSchema>
+                                </database>
+                                <generate>
+                                    <deprecated>false</deprecated>
+                                </generate>
+                                <target>
+                                    <packageName>com.jooqtest.model</packageName>
+                                    <directory>src/main/java</directory>
+                                </target>
+                            </generator>
+                        </configuration>
                     </execution>
                 </executions>
                 <dependencies>
@@ -167,32 +237,16 @@
                         <groupId>mysql</groupId>
                         <artifactId>mysql-connector-java</artifactId>
                         <version>${mysql.version}</version>
+                        <scope>compile</scope>
+                    </dependency>
+
+                    <dependency>
+                        <groupId>com.h2database</groupId>
+                        <artifactId>h2</artifactId>
+                        <version>1.3.168</version>
+                        <scope>compile</scope>
                     </dependency>
                 </dependencies>
-                <configuration>
-                    <jdbc>
-                        <driver>${jdbc.driver}</driver>
-                        <url>${jdbc.url}</url>
-                        <user>${jdbc.user}</user>
-                        <password>${jdbc.password}</password>
-                    </jdbc>
-                    <generator>
-                        <name>org.jooq.util.DefaultGenerator</name>
-                        <database>
-                            <name>org.jooq.util.mysql.MySQLDatabase</name>
-                            <includes>.*</includes>
-                            <excludes/>
-                            <inputSchema>${jdbc.database.name}</inputSchema>
-                        </database>
-                        <generate>
-                            <deprecated>false</deprecated>
-                        </generate>
-                        <target>
-                            <packageName>com.jooqtest.model</packageName>
-                            <directory>src/main/java</directory>
-                        </target>
-                    </generator>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -214,17 +268,65 @@
                 </executions>
             </plugin>
             <!-- jOOQ plagins ***************************************************** -->
-            <!-- Emma plagins ***************************************************** -->
+
+            <!-- Emma plagin ***************************************************** -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>emma-maven-plugin</artifactId>
                 <version>1.0-alpha-3</version>
             </plugin>
+
+            <!-- h2 plagin ***************************************************** -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>sql-maven-plugin</artifactId>
+                <version>1.5</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.h2database</groupId>
+                        <artifactId>h2</artifactId>
+                        <version>1.3.168</version>
+                    </dependency>
+                </dependencies>
+                <configuration>
+                    <driver>${h2.driver}</driver>
+                    <url>${h2.url}</url>
+                    <username>${h2.user}</username>
+                    <password>${h2.password}</password>
+                    <autocommit>true</autocommit>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>create-table</id>
+                        <phase>process-test-resources</phase>
+                        <goals>
+                            <goal>execute</goal>
+                        </goals>
+                        <configuration>
+                            <autocommit>true</autocommit>
+                            <srcFiles>
+                                <srcFile>src/main/resources/jOOQ_createDB.sql</srcFile>
+                            </srcFiles>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>insert-data</id>
+                        <phase>process-test-resources</phase>
+                        <goals>
+                            <goal>execute</goal>
+                        </goals>
+                        <configuration>
+                            <orderFile>ascending</orderFile>
+                            <fileset>
+                                <basedir>${basedir}</basedir>
+                                <includes>
+                                    <include>src/main/resources/jOOQ_insertDB.sql</include>
+                                </includes>
+                            </fileset>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
-        <!--<resources>
-            <resource>
-                <directory>src/main/resources</directory>
-            </resource>
-        </resources>-->
     </build>
 </project>

@@ -15,6 +15,7 @@ public class ItemBuilder {
     public static final Item CAR_GOLD = buildRule("car","color","gold");
     public static final Item CAR_BLACK = buildRule("car","color","black");
     public static final Item CAR_KUGA = buildRule("car","model","Kuga");
+    public static final Item CAR_TOYOTA = buildRule("car","manufactor","Toyota");
     public static final Item CAR_3= buildRule("car","id","3");
     public static final Item DRIVER_SLAVIK = buildRule("driver", "first_name", "Slavik");
     public static final Item DRIVER_MAKAR = buildRule("driver", "last_name", "Makar");

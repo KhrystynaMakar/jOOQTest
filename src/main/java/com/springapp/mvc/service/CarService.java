@@ -9,20 +9,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.jooqtest.model.tables.Car.CAR;
-
 @Service
 public class CarService {
-    @Autowired
-    private QueryBuildService queryBuildService;
 
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
+    public static final int CAR_ID_COLUMN = 0;
+    public static final int CAR_MANUFACTOR_COLUMN = 1;
+    public static final int CAR_CREATE_DATE_COLUMN = 2;
+    public static final int CAR_MODEL_COLUMN = 3;
+    public static final int CAR_COLOR_COLUMN = 4;
+    public static final int CAR_DOOR_QUANTITY_COLUMN = 5;
 
     public static final Logger logger = LoggerFactory.getLogger(CarService.class);
 
@@ -31,46 +32,34 @@ public class CarService {
             "LEFT JOIN driver ON driver.car_id = car.id " +
             "LEFT JOIN company ON company.id = driver.company_id";
 
+    @Autowired
+    private QueryBuildService queryBuildService;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
     public String getQueryString(Item item) throws IllegalArgumentException {
-        try {
-            return queryBuildService.getQueryString(item);
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
-            logger.error("JOOQ query builder problem", e);
-            throw new IllegalArgumentException("The argument 'conditions' must not contain null");
-        }
+        return queryBuildService.getQueryString(item);
     }
 
     public List<Car> getFilteredCars(Item item) {
-        try {
-            List<Car> cars = new ArrayList<Car>();
-            Result<Record> records = queryBuildService.getQuery(item).fetch();
-            for (Record record : records) {
-                Car car = new Car();
-                car.setId(record.getValue(CAR.ID));
-                car.setManufactor(record.getValue(CAR.MANUFACTOR));
-                car.setModel(record.getValue(CAR.MODEL));
-                car.setCreateDate(record.getValue(CAR.CREATE_DATE));
-                car.setColor(record.getValue(CAR.COLOR));
-                car.setDoorQuantity(record.getValue(CAR.DOOR_QUANTITY));
-                cars.add(car);
-            }
-            return cars;
-        } catch (Exception e) {
-            e.printStackTrace();
-            logger.error("jOOQ query executing exception", e);
-            return null;
+        List<Car> cars = new ArrayList<Car>();
+        Result<Record> records = queryBuildService.getQuery(item).fetch();
+        for (Record record : records) {
+            Car car = new Car();
+            car.setId((Long)record.getValue(CAR_ID_COLUMN));
+            car.setManufactor((String)record.getValue(CAR_MANUFACTOR_COLUMN));
+            car.setCreateDate((Date) record.getValue(CAR_CREATE_DATE_COLUMN));
+            car.setModel((String) record.getValue(CAR_MODEL_COLUMN));
+            car.setColor((String)record.getValue(CAR_COLOR_COLUMN));
+            car.setDoorQuantity((Integer)record.getValue(CAR_DOOR_QUANTITY_COLUMN));
+            cars.add(car);
         }
+        return cars;
     }
 
     public List<Car> getJDBCFilteredCars(String queryString) {
-        try {
-            return jdbcTemplate.query(queryString, new CarMapper());
-        } catch (Exception e) {
-            e.printStackTrace();
-            logger.error("Exception while jOOQ query has been executed by JDBC connector.", e);
-            return null;
-        }
+        return jdbcTemplate.query(queryString, new CarMapper());
     }
 
     public String getFullCarQuery(String jooqQuery) {

@@ -1,5 +1,6 @@
 package com.springapp.mvc.service;
 
+import com.springapp.mvc.dto.Item;
 import junit.framework.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -7,11 +8,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.util.Arrays;
+
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration("classpath:test-context.xml")
 public class CarServiceTest {
     @Autowired
     private CarService carService;
+
+    @Autowired
+    private ItemBuilder itemBuilder;
 
     @Test
     public void testGetFullCarQuery() throws Exception {
@@ -49,5 +55,25 @@ public class CarServiceTest {
     public void testVerifyQueryStringWithNull() throws Exception {
         String testString = "Hello world!";
         Assert.assertEquals(testString, carService.verifyQueryString(null));
+    }
+
+    @Test
+    public void testGetQueryString() throws Exception {
+        Item nestedGroup = itemBuilder.build(Arrays.asList(ItemBuilder.CAR_KUGA, ItemBuilder.CAR_TOYOTA), "OR");
+        Item testedItem = itemBuilder.build(Arrays.asList(ItemBuilder.CAR_RED, nestedGroup), "AND");
+
+        String expectedString = "select * from car where (car.color = 'red' and (car.model = 'Kuga' or car" +
+                ".manufactor = 'Toyota'))";
+        Assert.assertEquals(expectedString, carService.getQueryString(testedItem));
+    }
+
+    @Test
+    public void testGetQueryStringWithIncorrectOperator() throws Exception {
+        Item nestedGroup = itemBuilder.build(Arrays.asList(ItemBuilder.CAR_KUGA, ItemBuilder.CAR_TOYOTA), "COR");
+        Item testedItem = itemBuilder.build(Arrays.asList(ItemBuilder.CAR_RED, nestedGroup), "AND");
+
+        String expectedString = "select * from car where (car.color = 'red' and car.model = 'Kuga' and car" +
+                ".manufactor = 'Toyota')";
+        Assert.assertEquals(expectedString, carService.getQueryString(testedItem));
     }
 }
